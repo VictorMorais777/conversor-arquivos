@@ -5,13 +5,6 @@ import com.conversor.model.ResultadoConversao;
 
 import java.io.File;
 
-/**
- * Ponto único de entrada para conversão de arquivos.
- * Detecta o formato de origem, valida se a conversão faz sentido,
- * e decide qual motor usar (LibreOffice para documentos, ImageIO para imagens).
- * É essa classe que a UI (controller) deve chamar — ela não precisa saber
- * como cada conversão é feita por baixo dos panos.
- */
 public class ConversorService {
 
     private final FormatoDetector detector;
@@ -24,15 +17,6 @@ public class ConversorService {
         this.imagemConverter = new ImagemConverter();
     }
 
-    /**
-     * Converte o arquivo de origem para o formato de destino desejado.
-     * Detecta automaticamente o formato real de origem antes de converter.
-     *
-     * @param arquivoOrigem  arquivo selecionado pelo usuário
-     * @param formatoDestino formato desejado de saída
-     * @param pastaDestino   pasta onde o arquivo convertido será salvo
-     * @return ResultadoConversao com sucesso/erro e o arquivo gerado (se sucesso)
-     */
     public ResultadoConversao converter(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) {
         try {
             FormatoArquivo formatoOrigem = detector.detectar(arquivoOrigem);
@@ -56,11 +40,6 @@ public class ConversorService {
         }
     }
 
-    /**
-     * Retorna a lista de formatos de destino válidos para um determinado arquivo de origem.
-     * Usada para popular o dropdown da UI dinamicamente: documentos só podem virar
-     * outros documentos, imagens só podem virar outras imagens.
-     */
     public FormatoArquivo[] formatosDestinoDisponiveis(File arquivoOrigem) throws Exception {
         FormatoArquivo formatoOrigem = detector.detectar(arquivoOrigem);
 
@@ -70,10 +49,6 @@ public class ConversorService {
                 .toArray(FormatoArquivo[]::new);
     }
 
-    /**
-     * Garante que a conversão faz sentido: documento não pode virar imagem e vice-versa.
-     * Essa regra existe porque LibreOffice e ImageIO não têm como converter entre esses grupos.
-     */
     private void validarConversao(FormatoArquivo origem, FormatoArquivo destino) {
         boolean origemEhDocumento = origem.isDocumento();
         boolean destinoEhDocumento = destino.isDocumento();

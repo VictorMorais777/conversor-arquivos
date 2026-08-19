@@ -12,20 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-/**
- * Converte arquivos de imagem (png, jpg, webp, bmp, gif) usando a biblioteca
- * ImageIO nativa do Java. Não depende de nenhuma ferramenta externa instalada.
- */
 public class ImagemConverter {
 
-    /**
-     * Converte a imagem de origem para o formato de destino.
-     *
-     * @param arquivoOrigem  imagem a ser convertida
-     * @param formatoDestino formato desejado de saída
-     * @param pastaDestino   pasta onde a imagem convertida será salva
-     * @return o arquivo convertido
-     */
     public File converter(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) throws ConversaoException {
         if (!pastaDestino.exists()) {
             pastaDestino.mkdirs();
@@ -38,9 +26,6 @@ public class ImagemConverter {
                 throw new ConversaoException("Não foi possível ler a imagem de origem. Arquivo pode estar corrompido: " + arquivoOrigem.getName());
             }
 
-            // JPG não suporta transparência (canal alpha). Se a imagem original tiver
-            // (ex: convertendo de PNG), precisa "achatar" pra um fundo branco antes de salvar,
-            // senão o resultado sai com cores erradas ou falha ao salvar.
             BufferedImage imagemParaSalvar = imagemOriginal;
             if (formatoDestino == FormatoArquivo.JPG && imagemOriginal.getColorModel().hasAlpha()) {
                 imagemParaSalvar = removerTransparencia(imagemOriginal);
@@ -62,10 +47,6 @@ public class ImagemConverter {
         }
     }
 
-    /**
-     * Remove o canal alpha (transparência) preenchendo com fundo branco.
-     * Necessário para formatos como JPG que não suportam transparência.
-     */
     private BufferedImage removerTransparencia(BufferedImage original) {
         BufferedImage semAlpha = new BufferedImage(
                 original.getWidth(),
@@ -76,10 +57,6 @@ public class ImagemConverter {
         return semAlpha;
     }
 
-    /**
-     * Salva a imagem usando o writer nativo do ImageIO para o formato,
-     * aplicando uma qualidade razoável para formatos com compressão (ex: JPG).
-     */
     private boolean salvarComQualidade(BufferedImage imagem, FormatoArquivo formato, File arquivoSaida) throws IOException {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formato.getExtensao());
 

@@ -8,10 +8,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-/**
- * Classe principal da aplicação JavaFX. Carrega o FXML da tela principal
- * e exibe a janela do conversor.
- */
 public class App extends Application {
 
     @Override

@@ -15,11 +15,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
-/**
- * Controller da tela principal. Liga os componentes do FXML à lógica de conversão.
- * Mantém a UI responsiva rodando a conversão em uma thread separada (Task),
- * já que operações de LibreOffice/ImageIO podem demorar alguns segundos.
- */
 public class ConversorController {
 
     @FXML private Button btnSelecionarArquivo;
@@ -33,10 +28,6 @@ public class ConversorController {
 
     private File arquivoSelecionado;
 
-    /**
-     * Pasta onde os arquivos convertidos são salvos. Fica na pasta do usuário,
-     * dentro de uma subpasta própria do conversor, pra não misturar com outros arquivos.
-     */
     private final File pastaDestino = new File(System.getProperty("user.home"), "ConversorCNAGA");
 
     @FXML
@@ -62,10 +53,6 @@ public class ConversorController {
         popularFormatosDestino();
     }
 
-    /**
-     * Popula o ComboBox com os formatos de destino válidos para o arquivo selecionado,
-     * usando o ConversorService para detectar o tipo real e filtrar as opções.
-     */
     private void popularFormatosDestino() {
         try {
             FormatoArquivo[] formatosDisponiveis = conversorService.formatosDestinoDisponiveis(arquivoSelecionado);
@@ -98,7 +85,6 @@ public class ConversorController {
 
         setCarregando(true);
 
-        // Roda a conversão em background para não travar a interface (LibreOffice pode demorar).
         Task<ResultadoConversao> tarefaConversao = new Task<>() {
             @Override
             protected ResultadoConversao call() {
