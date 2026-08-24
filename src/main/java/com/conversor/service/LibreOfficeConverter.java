@@ -35,6 +35,7 @@ public class LibreOfficeConverter {
         try {
             Process processo = builder.start();
 
+            // Lê a saída do processo para não travar o buffer, mesmo sem precisar do conteúdo
             String saida = new String(processo.getInputStream().readAllBytes());
 
             boolean finalizou = processo.waitFor(TIMEOUT_SEGUNDOS, TimeUnit.SECONDS);
@@ -64,27 +65,40 @@ public class LibreOfficeConverter {
         }
     }
 
+    private static final java.util.Map<FormatoArquivo, String> FILTROS_EXPORTACAO = java.util.Map.of(
+            FormatoArquivo.DOCX, "MS Word 2007 XML",
+            FormatoArquivo.DOC, "MS Word 97",
+            FormatoArquivo.ODT, "writer8",
+            FormatoArquivo.XLSX, "Calc MS Excel 2007 XML",
+            FormatoArquivo.XLS, "MS Excel 97",
+            FormatoArquivo.ODS, "calc8",
+            FormatoArquivo.PPTX, "Impress MS PowerPoint 2007 XML",
+            FormatoArquivo.CSV, "Text - txt - csv (StarCalc)"
+    );
+
     private ProcessBuilder montarComando(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) {
         boolean origemEhPdf = arquivoOrigem.getName().toLowerCase().endsWith(".pdf");
 
+        String filtroExportacao = FILTROS_EXPORTACAO.get(formatoDestino);
+        String argumentoConvertTo = filtroExportacao != null
+                ? formatoDestino.getExtensao() + ":" + filtroExportacao
+                : formatoDestino.getExtensao();
+
+        java.util.List<String> argumentos = new java.util.ArrayList<>();
+        argumentos.add(CAMINHO_SOFFICE);
+        argumentos.add("--headless");
+
         if (origemEhPdf) {
-            return new ProcessBuilder(
-                    CAMINHO_SOFFICE,
-                    "--headless",
-                    "--infilter=writer_pdf_import",
-                    "--convert-to", formatoDestino.getExtensao(),
-                    "--outdir", pastaDestino.getAbsolutePath(),
-                    arquivoOrigem.getAbsolutePath()
-            );
+            argumentos.add("--infilter=writer_pdf_import");
         }
 
-        return new ProcessBuilder(
-                CAMINHO_SOFFICE,
-                "--headless",
-                "--convert-to", formatoDestino.getExtensao(),
-                "--outdir", pastaDestino.getAbsolutePath(),
-                arquivoOrigem.getAbsolutePath()
-        );
+        argumentos.add("--convert-to");
+        argumentos.add(argumentoConvertTo);
+        argumentos.add("--outdir");
+        argumentos.add(pastaDestino.getAbsolutePath());
+        argumentos.add(arquivoOrigem.getAbsolutePath());
+
+        return new ProcessBuilder(argumentos);
     }
 
     private String localizarPastaPythonCore(File pastaLibreOffice) {
