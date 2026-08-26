@@ -1,9 +1,11 @@
 package com.conversor.service;
 
+import com.conversor.model.CategoriaArquivo;
 import com.conversor.model.FormatoArquivo;
 import com.conversor.model.ResultadoConversao;
 
 import java.io.File;
+import java.util.Arrays;
 
 public class ConversorService {
 
@@ -43,26 +45,43 @@ public class ConversorService {
     public FormatoArquivo[] formatosDestinoDisponiveis(File arquivoOrigem) throws Exception {
         FormatoArquivo formatoOrigem = detector.detectar(arquivoOrigem);
 
-        return java.util.Arrays.stream(FormatoArquivo.values())
+        return Arrays.stream(FormatoArquivo.values())
                 .filter(formato -> formato != formatoOrigem)
-                .filter(formato -> formatoOrigem.isDocumento() ? formato.isDocumento() : formato.isImagem())
+                .filter(formato -> conversaoFazSentido(formatoOrigem, formato))
                 .toArray(FormatoArquivo[]::new);
     }
 
     private void validarConversao(FormatoArquivo origem, FormatoArquivo destino) {
-        boolean origemEhDocumento = origem.isDocumento();
-        boolean destinoEhDocumento = destino.isDocumento();
-
-        if (origemEhDocumento != destinoEhDocumento) {
-            throw new ConversaoException(
-                    "Não é possível converter " + origem + " (documento: " + origemEhDocumento + ")"
-                            + " para " + destino + " (documento: " + destinoEhDocumento + "). "
-                            + "Documentos só podem ser convertidos para outros documentos, e imagens para outras imagens."
-            );
-        }
-
         if (origem == destino) {
             throw new ConversaoException("O formato de origem e destino são iguais (" + origem + "). Escolha um formato diferente.");
         }
+
+        if (!conversaoFazSentido(origem, destino)) {
+            throw new ConversaoException(
+                    "Não é possível converter " + origem + " (" + origem.getCategoria() + ")"
+                            + " para " + destino + " (" + destino.getCategoria() + "). "
+                            + "Formatos de texto, planilha e apresentação só podem ser convertidos "
+                            + "dentro do próprio grupo, ou para PDF."
+            );
+        }
+    }
+
+    private boolean conversaoFazSentido(FormatoArquivo origem, FormatoArquivo destino) {
+        CategoriaArquivo categoriaOrigem = origem.getCategoria();
+        CategoriaArquivo categoriaDestino = destino.getCategoria();
+
+        if (categoriaOrigem == CategoriaArquivo.IMAGEM || categoriaDestino == CategoriaArquivo.IMAGEM) {
+            return categoriaOrigem == CategoriaArquivo.IMAGEM && categoriaDestino == CategoriaArquivo.IMAGEM;
+        }
+
+        if (categoriaOrigem == CategoriaArquivo.PDF) {
+            return categoriaDestino == CategoriaArquivo.TEXTO;
+        }
+
+        if (categoriaDestino == CategoriaArquivo.PDF) {
+            return true;
+        }
+
+        return categoriaOrigem == categoriaDestino;
     }
 }

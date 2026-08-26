@@ -1,34 +1,33 @@
 package com.conversor.model;
 
-/**
- * Representa os formatos de arquivo suportados pelo conversor.
- * Cada formato guarda sua extensão (usada para salvar o arquivo de saída)
- * e o mime type esperado (usado pelo FormatoDetector para validar o arquivo real).
- */
 public enum FormatoArquivo {
 
-    PDF("pdf", "application/pdf"),
-    DOCX("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-    DOC("doc", "application/msword"),
-    ODT("odt", "application/vnd.oasis.opendocument.text"),
-    XLSX("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-    XLS("xls", "application/vnd.ms-excel"),
-    CSV("csv", "text/csv"),
-    PPTX("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
-    ODS("ods", "application/vnd.oasis.opendocument.spreadsheet"),
+    PDF("pdf", "application/pdf", CategoriaArquivo.PDF),
+    DOCX("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", CategoriaArquivo.TEXTO),
+    DOC("doc", "application/msword", CategoriaArquivo.TEXTO),
+    ODT("odt", "application/vnd.oasis.opendocument.text", CategoriaArquivo.TEXTO),
 
-    PNG("png", "image/png"),
-    JPG("jpg", "image/jpeg"),
-    WEBP("webp", "image/webp"),
-    BMP("bmp", "image/bmp"),
-    GIF("gif", "image/gif");
+    XLSX("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", CategoriaArquivo.PLANILHA),
+    XLS("xls", "application/vnd.ms-excel", CategoriaArquivo.PLANILHA),
+    CSV("csv", "text/csv", CategoriaArquivo.PLANILHA),
+    ODS("ods", "application/vnd.oasis.opendocument.spreadsheet", CategoriaArquivo.PLANILHA),
+
+    PPTX("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation", CategoriaArquivo.APRESENTACAO),
+
+    PNG("png", "image/png", CategoriaArquivo.IMAGEM),
+    JPG("jpg", "image/jpeg", CategoriaArquivo.IMAGEM),
+    WEBP("webp", "image/webp", CategoriaArquivo.IMAGEM),
+    BMP("bmp", "image/bmp", CategoriaArquivo.IMAGEM),
+    GIF("gif", "image/gif", CategoriaArquivo.IMAGEM);
 
     private final String extensao;
     private final String mimeType;
+    private final CategoriaArquivo categoria;
 
-    FormatoArquivo(String extensao, String mimeType) {
+    FormatoArquivo(String extensao, String mimeType, CategoriaArquivo categoria) {
         this.extensao = extensao;
         this.mimeType = mimeType;
+        this.categoria = categoria;
     }
 
     public String getExtensao() {
@@ -39,26 +38,18 @@ public enum FormatoArquivo {
         return mimeType;
     }
 
-    /**
-     * Indica se o formato pertence ao grupo de documentos (convertidos via LibreOffice).
-     */
+    public CategoriaArquivo getCategoria() {
+        return categoria;
+    }
+
     public boolean isDocumento() {
-        return this == PDF || this == DOCX || this == DOC || this == ODT
-                || this == XLSX || this == XLS || this == CSV
-                || this == PPTX || this == ODS;
+        return categoria != CategoriaArquivo.IMAGEM;
     }
 
-    /**
-     * Indica se o formato pertence ao grupo de imagens (convertidas via ImageIO).
-     */
     public boolean isImagem() {
-        return this == PNG || this == JPG || this == WEBP || this == BMP || this == GIF;
+        return categoria == CategoriaArquivo.IMAGEM;
     }
 
-    /**
-     * Busca o enum a partir da extensão do arquivo (ex: "pdf", "docx"), ignorando maiúsculas/minúsculas.
-     * Retorna null se a extensão não for suportada.
-     */
     public static FormatoArquivo porExtensao(String extensao) {
         if (extensao == null) {
             return null;

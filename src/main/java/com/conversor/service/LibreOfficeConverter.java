@@ -10,20 +10,34 @@ import java.util.concurrent.TimeUnit;
 
 public class LibreOfficeConverter {
 
-    private static final String CAMINHO_SOFFICE = "C:\\Program Files\\LibreOffice\\program\\soffice.exe";
-
     private static final long TIMEOUT_SEGUNDOS = 120;
 
+    private static final String[] CAMINHOS_PADRAO_WINDOWS = {
+            "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+            "C:\\Program Files (x86)\\LibreOffice\\program\\soffice.exe"
+    };
+
+    private static final String[] CAMINHOS_PADRAO_LINUX = {
+            "/usr/bin/soffice",
+            "/opt/libreoffice/program/soffice"
+    };
+
+    private static final String[] CAMINHOS_PADRAO_MAC = {
+            "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+    };
+
+    private static String caminhoSofficeEncontrado;
+
     public File converter(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) throws ConversaoException {
-        validarSoffice();
+        String caminhoSoffice = localizarSoffice();
 
         if (!pastaDestino.exists()) {
             pastaDestino.mkdirs();
         }
 
-        File pastaLibreOffice = new File(CAMINHO_SOFFICE).getParentFile();
+        File pastaLibreOffice = new File(caminhoSoffice).getParentFile();
 
-        ProcessBuilder builder = montarComando(arquivoOrigem, formatoDestino, pastaDestino);
+        ProcessBuilder builder = montarComando(caminhoSoffice, arquivoOrigem, formatoDestino, pastaDestino);
         builder.directory(pastaLibreOffice);
         builder.redirectErrorStream(true);
 
@@ -75,7 +89,7 @@ public class LibreOfficeConverter {
             FormatoArquivo.CSV, "Text - txt - csv (StarCalc)"
     );
 
-    private ProcessBuilder montarComando(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) {
+    private ProcessBuilder montarComando(String caminhoSoffice, File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) {
         boolean origemEhPdf = arquivoOrigem.getName().toLowerCase().endsWith(".pdf");
 
         String filtroExportacao = FILTROS_EXPORTACAO.get(formatoDestino);
@@ -84,7 +98,7 @@ public class LibreOfficeConverter {
                 : formatoDestino.getExtensao();
 
         java.util.List<String> argumentos = new java.util.ArrayList<>();
-        argumentos.add(CAMINHO_SOFFICE);
+        argumentos.add(caminhoSoffice);
         argumentos.add("--headless");
 
         if (origemEhPdf) {
@@ -125,13 +139,59 @@ public class LibreOfficeConverter {
         return arquivo.exists() ? arquivo : null;
     }
 
-    private void validarSoffice() throws ConversaoException {
-        File soffice = new File(CAMINHO_SOFFICE);
-        if (!soffice.exists()) {
-            throw new ConversaoException(
-                    "LibreOffice não encontrado em: " + CAMINHO_SOFFICE
-                            + ". Verifique se está instalado ou ajuste o caminho em LibreOfficeConverter.CAMINHO_SOFFICE."
-            );
+    private String localizarSoffice() throws ConversaoException {
+        if (caminhoSofficeEncontrado != null) {
+            return caminhoSofficeEncontrado;
         }
+
+        for (String candidato : caminhosPadraoDoSistemaOperacional()) {
+            if (new File(candidato).exists()) {
+                caminhoSofficeEncontrado = candidato;
+                return caminhoSofficeEncontrado;
+            }
+        }
+
+        String caminhoViaPath = buscarNoPath();
+        if (caminhoViaPath != null) {
+            caminhoSofficeEncontrado = caminhoViaPath;
+            return caminhoSofficeEncontrado;
+        }
+
+        throw new ConversaoException(
+                "LibreOffice não foi encontrado nesta máquina. "
+                        + "Instale o LibreOffice (libreoffice.org/download) para converter documentos "
+                        + "como PDF, Word, Excel e PowerPoint."
+        );
+    }
+
+    private String[] caminhosPadraoDoSistemaOperacional() {
+        String sistemaOperacional = System.getProperty("os.name", "").toLowerCase();
+
+        if (sistemaOperacional.contains("win")) {
+            return CAMINHOS_PADRAO_WINDOWS;
+        }
+        if (sistemaOperacional.contains("mac")) {
+            return CAMINHOS_PADRAO_MAC;
+        }
+        return CAMINHOS_PADRAO_LINUX;
+    }
+
+    private String buscarNoPath() {
+        String path = System.getenv("PATH");
+        if (path == null) {
+            return null;
+        }
+
+        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+        String nomeExecutavel = windows ? "soffice.exe" : "soffice";
+
+        for (String pasta : path.split(File.pathSeparator)) {
+            File candidato = new File(pasta, nomeExecutavel);
+            if (candidato.exists()) {
+                return candidato.getAbsolutePath();
+            }
+        }
+
+        return null;
     }
 }
