@@ -35,7 +35,6 @@ public class LibreOfficeConverter {
         try {
             Process processo = builder.start();
 
-            // Lê a saída do processo para não travar o buffer, mesmo sem precisar do conteúdo
             String saida = new String(processo.getInputStream().readAllBytes());
 
             boolean finalizou = processo.waitFor(TIMEOUT_SEGUNDOS, TimeUnit.SECONDS);

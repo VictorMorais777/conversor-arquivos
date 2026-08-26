@@ -18,11 +18,13 @@ public class App extends Application {
 
         Parent root = fxmlLoader.load();
 
-        Scene scene = new Scene(root, 480, 400);
+        Scene scene = new Scene(root, 480, 560);
 
         stage.setTitle("Conversor de Arquivos");
         stage.setScene(scene);
-        stage.setResizable(false);
+        stage.setMinWidth(460);
+        stage.setMinHeight(560);
+        stage.setResizable(true);
         stage.show();
     }
 
