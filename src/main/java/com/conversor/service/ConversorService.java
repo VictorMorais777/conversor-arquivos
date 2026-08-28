@@ -3,7 +3,6 @@ package com.conversor.service;
 import com.conversor.model.CategoriaArquivo;
 import com.conversor.model.FormatoArquivo;
 import com.conversor.model.ResultadoConversao;
-
 import java.io.File;
 import java.util.Arrays;
 

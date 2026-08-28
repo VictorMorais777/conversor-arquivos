@@ -2,10 +2,6 @@ package com.conversor.model;
 
 import java.io.File;
 
-/**
- * Representa o resultado de uma tentativa de conversão: sucesso (com o arquivo gerado)
- * ou erro (com uma mensagem clara para exibir ao usuário na UI).
- */
 public class ResultadoConversao {
 
     private final boolean sucesso;
