@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LibreOfficeConverter {
 
-    private static final long TIMEOUT_SEGUNDOS = 120;
+    private static final long TIMEOUT_SEGUNDOS = 180;
 
     private static final String[] CAMINHOS_PADRAO_WINDOWS = {
             "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
@@ -27,6 +27,7 @@ public class LibreOfficeConverter {
     };
 
     private static String caminhoSofficeEncontrado;
+    private static File perfilIsoladoDaSessao;
 
     public File converter(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) throws ConversaoException {
         String caminhoSoffice = localizarSoffice();
@@ -36,10 +37,11 @@ public class LibreOfficeConverter {
         }
 
         File pastaLibreOffice = new File(caminhoSoffice).getParentFile();
+        File perfilIsolado = obterPerfilIsoladoDaSessao();
 
-        File perfilTemporario = criarPerfilTemporario();
+        removerLockAntigo(perfilIsolado);
 
-        ProcessBuilder builder = montarComando(caminhoSoffice, arquivoOrigem, formatoDestino, pastaDestino, perfilTemporario);
+        ProcessBuilder builder = montarComando(caminhoSoffice, arquivoOrigem, formatoDestino, pastaDestino, perfilIsolado);
         builder.directory(pastaLibreOffice);
         builder.redirectErrorStream(true);
 
@@ -57,6 +59,7 @@ public class LibreOfficeConverter {
 
             if (!finalizou) {
                 matarProcessoETodosOsFilhos(processo);
+                removerLockAntigo(perfilIsolado);
                 throw new ConversaoException("A conversão excedeu o tempo limite de " + TIMEOUT_SEGUNDOS + " segundos.");
             }
 
@@ -77,16 +80,35 @@ public class LibreOfficeConverter {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new ConversaoException("Conversão interrompida.", e);
-        } finally {
-            apagarPastaTemporaria(perfilTemporario);
         }
     }
 
-    private File criarPerfilTemporario() throws ConversaoException {
+    private synchronized File obterPerfilIsoladoDaSessao() throws ConversaoException {
+        if (perfilIsoladoDaSessao != null) {
+            return perfilIsoladoDaSessao;
+        }
+
         try {
-            return Files.createTempDirectory("conversor-lo-perfil-").toFile();
+            perfilIsoladoDaSessao = Files.createTempDirectory("conversor-lo-perfil-").toFile();
         } catch (IOException e) {
             throw new ConversaoException("Não foi possível criar perfil temporário do LibreOffice: " + e.getMessage(), e);
+        }
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> apagarPastaTemporaria(perfilIsoladoDaSessao)));
+
+        return perfilIsoladoDaSessao;
+    }
+
+    private void removerLockAntigo(File perfil) {
+        File[] locks = {
+                new File(perfil, ".lock"),
+                new File(perfil, "lock"),
+                new File(perfil, "user/.lock")
+        };
+        for (File lock : locks) {
+            if (lock.exists()) {
+                lock.delete();
+            }
         }
     }
 
@@ -101,13 +123,17 @@ public class LibreOfficeConverter {
                         .forEach(File::delete);
             }
         } catch (IOException ignorado) {
-
         }
     }
 
     private void matarProcessoETodosOsFilhos(Process processo) {
         processo.descendants().forEach(ProcessHandle::destroyForcibly);
         processo.destroyForcibly();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private static final java.util.Map<FormatoArquivo, String> FILTROS_EXPORTACAO = java.util.Map.of(
@@ -121,7 +147,7 @@ public class LibreOfficeConverter {
             FormatoArquivo.CSV, "Text - txt - csv (StarCalc)"
     );
 
-    private ProcessBuilder montarComando(String caminhoSoffice, File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino, File perfilTemporario) {
+    private ProcessBuilder montarComando(String caminhoSoffice, File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino, File perfilIsolado) {
         boolean origemEhPdf = arquivoOrigem.getName().toLowerCase().endsWith(".pdf");
 
         String filtroExportacao = FILTROS_EXPORTACAO.get(formatoDestino);
@@ -129,12 +155,13 @@ public class LibreOfficeConverter {
                 ? formatoDestino.getExtensao() + ":" + filtroExportacao
                 : formatoDestino.getExtensao();
 
-        String caminhoPerfil = perfilTemporario.getAbsolutePath().replace("\\", "/");
+        String caminhoPerfil = perfilIsolado.getAbsolutePath().replace("\\", "/");
 
         java.util.List<String> argumentos = new java.util.ArrayList<>();
         argumentos.add(caminhoSoffice);
         argumentos.add("--headless");
         argumentos.add("--norestore");
+        argumentos.add("--nolockcheck");
         argumentos.add("-env:UserInstallation=file:///" + caminhoPerfil);
 
         if (origemEhPdf) {

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="TOP_CENTER" spacing="16.0" styleClass="root" stylesheets="@styles.css"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.conversor.controller.ConversorController">
+
+    <padding>
+        <Insets top="28.0" right="30.0" bottom="28.0" left="30.0"/>
+    </padding>
+
+    <Label text="Conversor de Arquivos" styleClass="titulo"/>
+
+    <VBox fx:id="dropZone" alignment="CENTER" spacing="10.0" styleClass="drop-zone" onMouseClicked="#onSelecionarArquivo">
+        <Label text="Arraste um arquivo aqui" styleClass="drop-zone-label"/>
+        <Label text="ou clique para selecionar" styleClass="drop-zone-label"/>
+        <Label fx:id="lblArquivoSelecionado" text="Nenhum arquivo selecionado" styleClass="nome-arquivo"/>
+    </VBox>
+
+    <VBox alignment="CENTER" spacing="6.0">
+        <Label text="Converter para:" styleClass="label-secao"/>
+        <ComboBox fx:id="comboFormatoDestino" prefWidth="220.0" styleClass="combo-formato" disable="true"/>
+    </VBox>
+
+    <HBox alignment="CENTER" spacing="12.0">
+        <Button fx:id="btnConverter" text="Converter" styleClass="botao-primario" onAction="#onConverter" disable="true"/>
+        <ProgressIndicator fx:id="progressIndicator" visible="false" prefWidth="22.0" prefHeight="22.0"/>
+    </HBox>
+
+    <Separator prefWidth="380.0"/>
+
+    <VBox alignment="CENTER" spacing="8.0">
+        <Label text="Juntar vários PDFs em um só" styleClass="label-secao"/>
+        <Button fx:id="btnJuntarPdfs" text="Selecionar PDFs e Juntar" styleClass="botao-secundario" onAction="#onJuntarPdfs"/>
+    </VBox>
+
+    <Label fx:id="lblStatus" wrapText="true" maxWidth="380.0"/>
+
+</VBox>

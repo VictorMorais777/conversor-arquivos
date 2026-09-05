@@ -3,6 +3,7 @@ package com.conversor.service;
 import com.conversor.model.CategoriaArquivo;
 import com.conversor.model.FormatoArquivo;
 import com.conversor.model.ResultadoConversao;
+
 import java.io.File;
 import java.util.Arrays;
 
@@ -11,11 +12,13 @@ public class ConversorService {
     private final FormatoDetector detector;
     private final LibreOfficeConverter libreOfficeConverter;
     private final ImagemConverter imagemConverter;
+    private final ValidadorIntegridade validadorIntegridade;
 
     public ConversorService() {
         this.detector = new FormatoDetector();
         this.libreOfficeConverter = new LibreOfficeConverter();
         this.imagemConverter = new ImagemConverter();
+        this.validadorIntegridade = new ValidadorIntegridade();
     }
 
     public ResultadoConversao converter(File arquivoOrigem, FormatoArquivo formatoDestino, File pastaDestino) {
@@ -23,6 +26,7 @@ public class ConversorService {
             FormatoArquivo formatoOrigem = detector.detectar(arquivoOrigem);
 
             validarConversao(formatoOrigem, formatoDestino);
+            validadorIntegridade.validar(arquivoOrigem, formatoOrigem);
 
             File arquivoConvertido;
 

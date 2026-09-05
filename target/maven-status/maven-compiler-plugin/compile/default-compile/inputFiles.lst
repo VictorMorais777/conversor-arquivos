@@ -1,0 +1,13 @@
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\App.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\controller\ConversorController.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\Launcher.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\model\CategoriaArquivo.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\model\FormatoArquivo.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\model\ResultadoConversao.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\ConversaoException.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\ConversorService.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\FormatoDetector.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\FormatoNaoSuportadoException.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\ImagemConverter.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\LibreOfficeConverter.java
+C:\Users\jvpro\IdeaProjects\untitled\src\main\java\com\conversor\service\PdfMergeService.java

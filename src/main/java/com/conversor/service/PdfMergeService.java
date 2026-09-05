@@ -3,6 +3,7 @@ package com.conversor.service;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -13,7 +14,9 @@ public class PdfMergeService {
             throw new ConversaoException("Selecione pelo menos 2 arquivos PDF para juntar.");
         }
 
-        validarTodosSaoPdf(arquivosPdf);
+        for (File pdf : arquivosPdf) {
+            validarPdf(pdf);
+        }
 
         PDFMergerUtility merger = new PDFMergerUtility();
         merger.setDestinationFileName(arquivoSaida.getAbsolutePath());
@@ -32,13 +35,24 @@ public class PdfMergeService {
         }
     }
 
-    private void validarTodosSaoPdf(List<File> arquivos) {
-        for (File arquivo : arquivos) {
-            if (!arquivo.getName().toLowerCase().endsWith(".pdf")) {
-                throw new ConversaoException(
-                        "Todos os arquivos selecionados precisam ser PDF. Encontrado: " + arquivo.getName()
-                );
+    private void validarPdf(File arquivo) {
+        if (!arquivo.getName().toLowerCase().endsWith(".pdf")) {
+            throw new ConversaoException("Todos os arquivos selecionados precisam ser PDF. Encontrado: " + arquivo.getName());
+        }
+
+        if (!arquivo.exists() || arquivo.length() == 0) {
+            throw new ConversaoException("O arquivo está vazio ou não foi encontrado: " + arquivo.getName());
+        }
+
+        byte[] cabecalho = new byte[5];
+        try (FileInputStream fis = new FileInputStream(arquivo)) {
+            int lidos = fis.read(cabecalho);
+            String assinatura = lidos > 0 ? new String(cabecalho) : "";
+            if (!assinatura.startsWith("%PDF")) {
+                throw new ConversaoException("O arquivo não parece ser um PDF válido: " + arquivo.getName());
             }
+        } catch (IOException e) {
+            throw new ConversaoException("Não foi possível ler o arquivo: " + arquivo.getName());
         }
     }
 }

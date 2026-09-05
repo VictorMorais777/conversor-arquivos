@@ -1,0 +1,15 @@
+com\conversor\App.class
+com\conversor\model\ResultadoConversao.class
+com\conversor\controller\ConversorController$1.class
+com\conversor\controller\ConversorController$2.class
+com\conversor\service\ConversaoException.class
+com\conversor\service\FormatoDetector.class
+com\conversor\service\FormatoNaoSuportadoException.class
+com\conversor\controller\ConversorController.class
+com\conversor\service\PdfMergeService.class
+com\conversor\model\CategoriaArquivo.class
+com\conversor\service\ImagemConverter.class
+com\conversor\service\LibreOfficeConverter.class
+com\conversor\service\ConversorService.class
+com\conversor\model\FormatoArquivo.class
+com\conversor\Launcher.class
