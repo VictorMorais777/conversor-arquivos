@@ -73,7 +73,7 @@ public class ImagemConverter {
 
             if (parametros.canWriteCompressed() && (formato == FormatoArquivo.JPG)) {
                 parametros.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                parametros.setCompressionQuality(0.9f); // 90% de qualidade, bom equilíbrio entre nitidez e tamanho
+                parametros.setCompressionQuality(0.9f);
             }
 
             writer.write(null, new IIOImage(imagem, null, null), parametros);

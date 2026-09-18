@@ -11,5 +11,6 @@ com\conversor\model\CategoriaArquivo.class
 com\conversor\service\ImagemConverter.class
 com\conversor\service\LibreOfficeConverter.class
 com\conversor\service\ConversorService.class
+com\conversor\service\ValidadorIntegridade.class
 com\conversor\model\FormatoArquivo.class
 com\conversor\Launcher.class
